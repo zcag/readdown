@@ -1,0 +1,54 @@
+{
+  "name": "readdown",
+  "version": "0.1.0",
+  "description": "HTML to clean Markdown optimized for LLMs. One function: HTML in, token-efficient Markdown out.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "markdown",
+    "html-to-markdown",
+    "readability",
+    "llm",
+    "ai",
+    "rag",
+    "content-extraction",
+    "web-scraping",
+    "token-efficient",
+    "chatgpt",
+    "claude",
+    "turndown-alternative"
+  ],
+  "author": "zcag",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zcag/readdown"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/zcag"
+  },
+  "dependencies": {
+    "linkedom": "^0.18.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  }
+}

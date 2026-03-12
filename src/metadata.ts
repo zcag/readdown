@@ -1,0 +1,104 @@
+/**
+ * Extract metadata from HTML document — title, author, date, description, etc.
+ */
+
+export interface Metadata {
+  title: string;
+  author?: string;
+  date?: string;
+  description?: string;
+  siteName?: string;
+  url?: string;
+  image?: string;
+  lang?: string;
+}
+
+export function extractMetadata(document: Document, url?: string): Metadata {
+  const meta: Metadata = {
+    title: '',
+  };
+
+  // Title: og:title > title tag > h1
+  meta.title =
+    getMetaContent(document, 'og:title') ||
+    getMetaContent(document, 'twitter:title') ||
+    document.title ||
+    (document.querySelector('h1')?.textContent || '').trim();
+
+  // Author
+  meta.author =
+    getMetaContent(document, 'author') ||
+    getMetaContent(document, 'article:author') ||
+    getJsonLdValue(document, 'author');
+
+  // Date
+  meta.date =
+    getMetaContent(document, 'article:published_time') ||
+    getMetaContent(document, 'date') ||
+    getMetaContent(document, 'DC.date') ||
+    getTimeElement(document) ||
+    getJsonLdValue(document, 'datePublished');
+
+  // Description
+  meta.description =
+    getMetaContent(document, 'og:description') ||
+    getMetaContent(document, 'description') ||
+    getMetaContent(document, 'twitter:description');
+
+  // Site name
+  meta.siteName =
+    getMetaContent(document, 'og:site_name') ||
+    getJsonLdValue(document, 'publisher');
+
+  // URL
+  meta.url =
+    url ||
+    getMetaContent(document, 'og:url') ||
+    (document.querySelector('link[rel="canonical"]') as Element)?.getAttribute('href') ||
+    undefined;
+
+  // Image
+  meta.image =
+    getMetaContent(document, 'og:image') ||
+    getMetaContent(document, 'twitter:image');
+
+  // Language
+  meta.lang =
+    document.documentElement?.getAttribute('lang') || undefined;
+
+  // Clean undefined values
+  for (const key of Object.keys(meta) as (keyof Metadata)[]) {
+    if (!meta[key]) delete meta[key];
+  }
+
+  return meta;
+}
+
+function getMetaContent(doc: Document, name: string): string | undefined {
+  const el =
+    doc.querySelector(`meta[property="${name}"]`) ||
+    doc.querySelector(`meta[name="${name}"]`);
+  const content = el?.getAttribute('content');
+  return content?.trim() || undefined;
+}
+
+function getTimeElement(doc: Document): string | undefined {
+  const time = doc.querySelector('time[datetime]');
+  return time?.getAttribute('datetime') || undefined;
+}
+
+function getJsonLdValue(doc: Document, field: string): string | undefined {
+  const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+  for (const script of scripts) {
+    try {
+      const data = JSON.parse(script.textContent || '');
+      if (data[field]) {
+        if (typeof data[field] === 'string') return data[field];
+        if (data[field].name) return data[field].name;
+      }
+    } catch {
+      // ignore malformed JSON-LD
+    }
+  }
+  return undefined;
+}

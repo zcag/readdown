@@ -1,0 +1,38 @@
+name: 'readdown - HTML to Markdown'
+description: 'Convert web pages or HTML files to clean, LLM-optimized Markdown. Includes content extraction, metadata, and token estimation.'
+author: 'zcag'
+
+branding:
+  icon: 'file-text'
+  color: 'blue'
+
+inputs:
+  url:
+    description: 'URL to fetch and convert to markdown'
+    required: false
+  html-file:
+    description: 'Path to HTML file to convert'
+    required: false
+  output-file:
+    description: 'Path to write markdown output (default: stdout)'
+    required: false
+  raw:
+    description: 'Skip content extraction, convert full HTML'
+    required: false
+    default: 'false'
+  include-header:
+    description: 'Include title/metadata header in output'
+    required: false
+    default: 'true'
+
+outputs:
+  markdown:
+    description: 'The converted markdown content'
+  tokens:
+    description: 'Estimated token count'
+  title:
+    description: 'Extracted page title'
+
+runs:
+  using: 'node20'
+  main: 'action/dist/index.js'

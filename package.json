@@ -1,6 +1,6 @@
 {
   "name": "readdown",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "HTML to clean Markdown optimized for LLMs. One function: HTML in, token-efficient Markdown out.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -49,12 +49,15 @@
     "url": "https://github.com/sponsors/zcag"
   },
   "dependencies": {
-    "linkedom": "^0.18.0"
+    "linkedom": "^0.18.12"
   },
   "devDependencies": {
+    "@mozilla/readability": "^0.6.0",
     "@types/node": "^25.4.0",
     "@vercel/ncc": "^0.38.4",
+    "defuddle": "^0.12.0",
     "tsup": "^8.0.0",
+    "turndown": "^7.2.2",
     "typescript": "^5.4.0"
   }
 }

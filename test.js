@@ -183,6 +183,31 @@ const r17 = readdown('<html><head><title>Details</title></head><body><details><s
 test('details preserved', () => assert(r17.markdown.includes('<details>'), 'missing details'));
 test('summary preserved', () => assert(r17.markdown.includes('<summary>Click me</summary>'), 'missing summary'));
 
+// Test 18: Class name false positives (heading, loading, etc. should NOT be skipped)
+console.log('\n--- Class false positives ---');
+const r18 = readdown('<html><head><title>Test</title></head><body><main><section><h2 class="heading">Section Title</h2><p>Content here.</p></section></main></body></html>', { includeHeader: false });
+test('heading class not skipped', () => assert(r18.markdown.includes('## Section Title'), 'heading with class="heading" was incorrectly skipped'));
+
+const r18b = readdown('<html><head><title>Test</title></head><body><main><div class="loading-state"><p>Still loading data.</p></div></main></body></html>', { includeHeader: false });
+test('loading class not skipped', () => assert(r18b.markdown.includes('Still loading'), 'div with class="loading-state" was incorrectly skipped'));
+
+// Test 19: Layout tables should be unwrapped, not rendered as markdown tables
+console.log('\n--- Layout tables ---');
+const r19 = readdown('<html><head><title>Test</title></head><body><table><tr><td><h1>Title</h1><p>Content paragraph.</p></td></tr></table></body></html>', { includeHeader: false });
+test('layout table unwrapped', () => assert(!r19.markdown.includes('|'), 'layout table rendered as markdown table'));
+test('layout table content preserved', () => assert(r19.markdown.includes('Content paragraph'), 'layout table content lost'));
+
+// Test 20: Spacer images should be filtered
+console.log('\n--- Spacer images ---');
+const r20 = readdown('<html><head><title>Test</title></head><body><p>Text</p><img src="https://example.com/trans_1x1.gif" width="1" height="1"><img src="photo.jpg" alt="Photo"></body></html>', { includeHeader: false });
+test('spacer image filtered', () => assert(!r20.markdown.includes('trans_1x1'), 'spacer image not filtered'));
+test('real image preserved', () => assert(r20.markdown.includes('![Photo](photo.jpg)'), 'real image was filtered'));
+
+// Test 21: Data tables should still render correctly
+console.log('\n--- Data tables preserved ---');
+const r21 = readdown('<html><head><title>Test</title></head><body><table><tr><th>Name</th><th>Age</th></tr><tr><td>Alice</td><td>30</td></tr></table></body></html>', { includeHeader: false });
+test('data table rendered', () => assert(r21.markdown.includes('| Name | Age |'), 'data table not rendered'));
+
 // Summary
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
 if (failed > 0) process.exit(1);

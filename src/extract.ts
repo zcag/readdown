@@ -9,7 +9,7 @@ const REMOVE_TAGS = new Set([
   'input', 'select', 'textarea', 'label', 'dialog',
 ]);
 
-const SKIP_CLASSES = /nav|menu|sidebar|footer|header|breadcrumb|pagination|ads?[-_]?|banner|cookie|popup|modal|overlay|social|share|comment-form|search-form|toc[-_]|table-of-contents/i;
+const SKIP_CLASSES = /\bnav\b|menu|sidebar|\bfooter\b|\bheader\b|breadcrumb|pagination|\bads?\b[-_]?|banner|cookie|popup|modal|overlay|\bsocial\b|share|comment-form|search-form|toc[-_]|table-of-contents/i;
 
 interface ScoredElement {
   element: Element;

@@ -140,6 +140,8 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
       const text = inline().trim();
       if (!text) return '';
       if (!href || href.startsWith('#') || href.startsWith('javascript:')) return text;
+      // If text is only whitespace or empty after image filtering, skip
+      if (!text.replace(/\s/g, '')) return '';
       const fullUrl = resolveUrl(href, opts.baseUrl);
       return `[${text}](${fullUrl})`;
     }
@@ -148,6 +150,11 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
       const alt = el.getAttribute('alt') || '';
       const src = el.getAttribute('src') || el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || '';
       if (!src) return '';
+      // Skip spacer/tracking images
+      if (/trans|spacer|blank|pixel|1x1|tracking|beacon/i.test(src)) return '';
+      const w = el.getAttribute('width');
+      const h = el.getAttribute('height');
+      if (w === '1' || h === '1') return '';
       const fullSrc = resolveUrl(src, opts.baseUrl);
       return `![${alt}](${fullSrc})`;
     }
@@ -194,8 +201,11 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
       return '\n\n' + content.split('\n').map(line => `> ${line}`).join('\n') + '\n\n';
     }
 
-    // Table
-    case 'table': return convertTable(el, opts);
+    // Table — skip layout tables, render data tables
+    case 'table': {
+      if (isLayoutTable(el)) return children();
+      return convertTable(el, opts);
+    }
 
     // Figure
     case 'figure': return children();
@@ -258,6 +268,46 @@ function convertListItem(li: Element, opts: ConvertOptions): string {
   const trimmed = inlineContent.trim();
   if (!trimmed && !nestedLists) return '';
   return trimmed + nestedLists;
+}
+
+/** Detect tables used for page layout rather than data display. */
+function isLayoutTable(table: Element): boolean {
+  // Tables with role="presentation" or role="layout" are explicitly layout
+  const role = table.getAttribute('role');
+  if (role === 'presentation' || role === 'layout') return true;
+
+  const rows = table.querySelectorAll('tr');
+  const ths = table.querySelectorAll('th');
+
+  // No header cells and cells contain block elements = layout table
+  if (ths.length === 0) {
+    const cells = table.querySelectorAll('td');
+    for (const cell of cells) {
+      if (cell.querySelector('p, h1, h2, h3, h4, h5, h6, ul, ol, table, blockquote, pre, div')) {
+        return true;
+      }
+    }
+    // Single-column or single-row tables with lots of text are often layout
+    if (rows.length <= 2) {
+      const textLen = (table.textContent || '').trim().length;
+      if (textLen > 500) return true;
+    }
+  }
+
+  // Tables with spacer images (1x1 transparent gifs)
+  const imgs = table.querySelectorAll('img');
+  let spacerCount = 0;
+  for (const img of imgs) {
+    const src = img.getAttribute('src') || '';
+    const width = img.getAttribute('width');
+    const height = img.getAttribute('height');
+    if ((width === '1' && height === '1') || /trans|spacer|blank|pixel/i.test(src)) {
+      spacerCount++;
+    }
+  }
+  if (spacerCount > 0) return true;
+
+  return false;
 }
 
 function convertTable(table: Element, opts: ConvertOptions): string {

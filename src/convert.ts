@@ -237,14 +237,15 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
     }
     case 'summary': return '';
 
-    // Skip media
+    // Skip media (but picture falls through to process its <img> child)
     case 'video':
     case 'audio':
     case 'source':
-    case 'picture':
     case 'map':
     case 'area':
       return '';
+    case 'picture':
+      return children();
 
     default:
       return children();

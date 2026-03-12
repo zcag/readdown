@@ -208,6 +208,15 @@ console.log('\n--- Data tables preserved ---');
 const r21 = readdown('<html><head><title>Test</title></head><body><table><tr><th>Name</th><th>Age</th></tr><tr><td>Alice</td><td>30</td></tr></table></body></html>', { includeHeader: false });
 test('data table rendered', () => assert(r21.markdown.includes('| Name | Age |'), 'data table not rendered'));
 
+// Test 22: Picture element should extract inner img
+console.log('\n--- Picture element ---');
+const r22 = readdown('<html><head><title>Test</title></head><body><article><p>Before</p><picture><source srcset="big.webp" type="image/webp"><source srcset="big.avif" type="image/avif"><img src="fallback.jpg" alt="Photo"></picture><p>After</p></article></body></html>', { includeHeader: false });
+test('picture extracts img fallback', () => assert(r22.markdown.includes('![Photo](fallback.jpg)'), 'picture element img not extracted'));
+test('picture no duplicate images', () => {
+  const imgs = (r22.markdown.match(/!\[Photo\]/g) || []);
+  assert(imgs.length === 1, `expected 1 image, got ${imgs.length}`);
+});
+
 // Summary
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
 if (failed > 0) process.exit(1);

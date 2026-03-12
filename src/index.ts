@@ -102,10 +102,10 @@ export function readdown(html: string, options: ReaddownOptions = {}): ReaddownR
 
 function cleanMarkdown(md: string): string {
   return md
-    // Collapse 3+ newlines to 2
-    .replace(/\n{3,}/g, '\n\n')
-    // Remove trailing whitespace on lines
+    // Remove trailing whitespace on lines first (whitespace-only lines become empty)
     .split('\n').map(l => l.trimEnd()).join('\n')
+    // Then collapse 3+ newlines to 2 (catches sequences created by trimming)
+    .replace(/\n{3,}/g, '\n\n')
     // Trim
     .trim() + '\n';
 }

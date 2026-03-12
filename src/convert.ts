@@ -196,7 +196,7 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
 
     // Blockquote
     case 'blockquote': {
-      const content = children().trim();
+      const content = children().trim().replace(/\n{3,}/g, '\n\n');
       if (!content) return '';
       return '\n\n' + content.split('\n').map(line => `> ${line}`).join('\n') + '\n\n';
     }

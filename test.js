@@ -217,6 +217,15 @@ test('picture no duplicate images', () => {
   assert(imgs.length === 1, `expected 1 image, got ${imgs.length}`);
 });
 
+// Test 23: Nested blockquotes
+console.log('\n--- Nested blockquotes ---');
+const r23 = readdown('<html><head><title>Test</title></head><body><blockquote><p>Outer</p><blockquote><p>Inner</p></blockquote></blockquote></body></html>', { includeHeader: false });
+test('nested blockquote outer', () => assert(r23.markdown.includes('> Outer'), 'missing outer quote'));
+test('nested blockquote inner', () => assert(r23.markdown.includes('> > Inner'), 'missing nested quote'));
+
+const r23deep = readdown('<html><head><title>Test</title></head><body><blockquote><p>L1</p><blockquote><p>L2</p><blockquote><p>L3</p></blockquote></blockquote></blockquote></body></html>', { includeHeader: false });
+test('triple nested blockquote', () => assert(r23deep.markdown.includes('> > > L3'), 'missing triple nested'));
+
 // Summary
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
 if (failed > 0) process.exit(1);

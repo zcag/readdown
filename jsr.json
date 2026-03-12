@@ -1,6 +1,7 @@
 {
   "name": "@zcag/readdown",
-  "version": "0.2.2",
+  "version": "0.2.3",
+  "description": "HTML to clean Markdown optimized for LLMs. One function: HTML in, token-efficient Markdown out.",
   "exports": "./src/index.ts",
   "publish": {
     "include": ["src/", "LICENSE", "README.md"]

@@ -4,6 +4,7 @@
  * Within ~10% of tiktoken for typical content.
  */
 
+/** Token estimation result with context window usage for popular LLM models. */
 export interface TokenEstimate {
   /** Approximate token count */
   tokens: number;
@@ -23,6 +24,16 @@ const CONTEXT_WINDOWS: Record<string, number> = {
   'gemini-2.5': 1_000_000,
 };
 
+/**
+ * Estimate the token count of a text string.
+ *
+ * Uses a character-based heuristic (~4 chars/token for English) that is
+ * within ~10% of tiktoken for typical content. Also computes context
+ * window usage percentages for popular LLM models.
+ *
+ * @param text - The text to estimate tokens for.
+ * @returns Token count, character count, and context window usage percentages.
+ */
 export function estimateTokens(text: string): TokenEstimate {
   const chars = text.length;
   // ~4 chars per token for English prose/markdown

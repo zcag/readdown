@@ -16,6 +16,16 @@ interface ScoredElement {
   score: number;
 }
 
+/**
+ * Find the main content element in an HTML document.
+ *
+ * Uses semantic tags (`<article>`, `<main>`, `[role="main"]`) first,
+ * then falls back to heuristic scoring based on paragraph text density
+ * and link density.
+ *
+ * @param document - The parsed HTML document to extract content from.
+ * @returns The DOM element most likely to contain the main content.
+ */
 export function findMainContent(document: Document): Element {
   // Try semantic tags first
   const article = document.querySelector('article');
@@ -51,6 +61,15 @@ export function findMainContent(document: Document): Element {
   return best.element;
 }
 
+/**
+ * Check if an element should be skipped during content extraction.
+ *
+ * Skips navigation, ads, sidebars, hidden elements, and other
+ * non-content elements based on tag name, class, and ARIA attributes.
+ *
+ * @param el - The DOM element to check.
+ * @returns `true` if the element should be skipped.
+ */
 export function shouldSkipElement(el: Element): boolean {
   const tag = el.tagName.toLowerCase();
   if (REMOVE_TAGS.has(tag)) return true;

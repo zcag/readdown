@@ -14,6 +14,17 @@ interface ConvertOptions {
   listDepth?: number;
 }
 
+/**
+ * Convert a DOM node to Markdown.
+ *
+ * Recursively converts HTML elements to clean, token-efficient Markdown.
+ * Handles headings, paragraphs, lists, tables, code blocks, links, images,
+ * blockquotes, definition lists, and inline formatting.
+ *
+ * @param node - The DOM node to convert.
+ * @param opts - Conversion options (base URL, preformatted state, list depth).
+ * @returns The Markdown string representation of the node.
+ */
 export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string {
   if (node.nodeType === 3 /* TEXT_NODE */) {
     let text = node.textContent || '';

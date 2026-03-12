@@ -2,6 +2,7 @@
  * Extract metadata from HTML document — title, author, date, description, etc.
  */
 
+/** Metadata extracted from an HTML document (title, author, date, etc.). */
 export interface Metadata {
   title: string;
   author?: string;
@@ -13,6 +14,17 @@ export interface Metadata {
   lang?: string;
 }
 
+/**
+ * Extract metadata from an HTML document.
+ *
+ * Reads Open Graph, Twitter Card, and standard meta tags, JSON-LD data,
+ * `<time>` elements, and canonical URLs. Falls back through multiple
+ * sources for each field.
+ *
+ * @param document - The parsed HTML document.
+ * @param url - Optional source URL (used as fallback for `og:url` / canonical).
+ * @returns Extracted metadata (title, author, date, description, etc.).
+ */
 export function extractMetadata(document: Document, url?: string): Metadata {
   const meta: Metadata = {
     title: '',

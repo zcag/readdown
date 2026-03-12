@@ -7,6 +7,10 @@ Replaces the common `@mozilla/readability` + `turndown` two-package setup with a
 ## Install
 
 ```bash
+# JSR (recommended)
+npx jsr add @zcag/readdown
+
+# npm (from GitHub)
 npm install github:zcag/readdown
 ```
 
@@ -27,7 +31,7 @@ console.log(result.metadata);  // { title, author, date, ... }
 
 ```bash
 # Install globally
-npm install -g github:zcag/readdown
+npx jsr add -g @zcag/readdown
 
 # Convert a URL
 readdown https://example.com/article

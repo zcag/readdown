@@ -7,7 +7,7 @@ Replaces the common `@mozilla/readability` + `turndown` two-package setup with a
 ## Install
 
 ```bash
-npm install readdown
+npm install github:zcag/readdown
 ```
 
 ## Usage
@@ -26,6 +26,9 @@ console.log(result.metadata);  // { title, author, date, ... }
 ## CLI
 
 ```bash
+# Install globally
+npm install -g github:zcag/readdown
+
 # Convert a URL
 readdown https://example.com/article
 

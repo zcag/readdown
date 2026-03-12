@@ -4,13 +4,21 @@
 
 /** Metadata extracted from an HTML document (title, author, date, etc.). */
 export interface Metadata {
+  /** Page title from og:title, `<title>`, or first `<h1>`. */
   title: string;
+  /** Author name from meta tags or JSON-LD. */
   author?: string;
+  /** Publication date from article:published_time, meta date, or JSON-LD. */
   date?: string;
+  /** Page description from og:description or meta description. */
   description?: string;
+  /** Site name from og:site_name or JSON-LD publisher. */
   siteName?: string;
+  /** Canonical URL from og:url or `<link rel="canonical">`. */
   url?: string;
+  /** Primary image URL from og:image or twitter:image. */
   image?: string;
+  /** Document language from the `lang` attribute on `<html>`. */
   lang?: string;
 }
 

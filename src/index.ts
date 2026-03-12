@@ -19,6 +19,7 @@ import { elementToMarkdown } from './convert.js';
 import { extractMetadata, type Metadata } from './metadata.js';
 import { estimateTokens, type TokenEstimate } from './tokens.js';
 
+/** Options for the {@linkcode readdown} function. */
 export interface ReaddownOptions {
   /** Base URL for resolving relative links and images */
   url?: string;
@@ -28,6 +29,7 @@ export interface ReaddownOptions {
   raw?: boolean;
 }
 
+/** Result returned by the {@linkcode readdown} function. */
 export interface ReaddownResult {
   /** Clean Markdown content */
   markdown: string;

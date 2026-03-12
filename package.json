@@ -1,6 +1,6 @@
 {
   "name": "readdown",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "HTML to clean Markdown optimized for LLMs. One function: HTML in, token-efficient Markdown out.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -31,6 +31,22 @@ console.log(result.metadata);  // { title, author, date, ... }
 
 All in one function call, one dependency.
 
+## Supported HTML elements
+
+- Headings (`h1`-`h6`)
+- Paragraphs, line breaks, horizontal rules
+- **Bold**, *italic*, ~~strikethrough~~, `inline code`, ==highlights==
+- Superscript (10^2^), subscript (H~2~O), abbreviations
+- Links (with relative URL resolution)
+- Images (with `data-src` lazy-loading fallback)
+- Unordered, ordered, and nested lists (with proper indentation)
+- Blockquotes
+- Tables (with pipe escaping)
+- Code blocks (with language detection from `language-*`, `lang-*`, `highlight-*` classes)
+- Definition lists (`dl`/`dt`/`dd`)
+- `<details>`/`<summary>` (preserved as HTML)
+- `<figure>`/`<figcaption>`
+
 ## API
 
 ### `readdown(html, options?)`
@@ -54,8 +70,8 @@ Returns `ReaddownResult`:
   chars: number;          // Character count
   contextUsage: {         // % of context window used
     'gpt-4o': number;
-    'claude-3.5': number;
-    'gemini-1.5': number;
+    'claude-4': number;
+    'gemini-2.5': number;
   };
 }
 ```
@@ -81,10 +97,12 @@ import { findMainContent, elementToMarkdown, extractMetadata, estimateTokens } f
 | | readability + turndown | readdown |
 |---|---|---|
 | Dependencies | 2 packages + glue code | 1 package |
+| Bundle size | ~65 KB gzipped | ~5 KB gzipped |
 | API | Multi-step pipeline | Single function |
 | Token estimation | Not included | Built-in |
 | Metadata | Separate extraction | Included |
-| Optimized for LLMs | No | Yes (token-efficient output) |
+| Nested lists | Requires config | Works out of the box |
+| LLM-optimized | No | Yes (token-efficient output) |
 
 ## License
 

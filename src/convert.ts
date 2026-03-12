@@ -10,6 +10,8 @@ interface ConvertOptions {
   baseUrl?: string;
   /** Whether we're inside a preformatted block */
   preformatted?: boolean;
+  /** Current list nesting depth (for indentation) */
+  listDepth?: number;
 }
 
 export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string {
@@ -93,6 +95,27 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
       return t ? `~~${t}~~` : '';
     }
 
+    case 'mark': {
+      const t = inline().trim();
+      return t ? `==${t}==` : '';
+    }
+
+    case 'sup': {
+      const t = inline().trim();
+      return t ? `^${t}^` : '';
+    }
+
+    case 'sub': {
+      const t = inline().trim();
+      return t ? `~${t}~` : '';
+    }
+
+    case 'abbr': {
+      const t = inline().trim();
+      const title = el.getAttribute('title');
+      return t ? (title ? `${t} (${title})` : t) : '';
+    }
+
     // Code
     case 'code': {
       if (el.parentElement && el.parentElement.tagName.toLowerCase() === 'pre') {
@@ -123,7 +146,7 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
 
     case 'img': {
       const alt = el.getAttribute('alt') || '';
-      const src = el.getAttribute('src');
+      const src = el.getAttribute('src') || el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || '';
       if (!src) return '';
       const fullSrc = resolveUrl(src, opts.baseUrl);
       return `![${alt}](${fullSrc})`;
@@ -131,29 +154,35 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
 
     // Lists
     case 'ul': {
-      let result = '\n\n';
+      const depth = opts.listDepth || 0;
+      const indent = '  '.repeat(depth);
+      const childOpts = { ...opts, listDepth: depth + 1 };
+      let result = depth === 0 ? '\n\n' : '\n';
       for (const li of el.children) {
         if (li.tagName.toLowerCase() === 'li') {
-          const content = elementToMarkdown(li, opts).trim();
-          if (content) result += `- ${content}\n`;
+          const content = convertListItem(li, childOpts);
+          if (content) result += `${indent}- ${content}\n`;
         }
       }
-      return result + '\n';
+      return depth === 0 ? result + '\n' : result;
     }
 
     case 'ol': {
-      let result = '\n\n';
+      const depth = opts.listDepth || 0;
+      const indent = '  '.repeat(depth);
+      const childOpts = { ...opts, listDepth: depth + 1 };
+      let result = depth === 0 ? '\n\n' : '\n';
       let i = parseInt(el.getAttribute('start') || '1', 10);
       for (const li of el.children) {
         if (li.tagName.toLowerCase() === 'li') {
-          const content = elementToMarkdown(li, opts).trim();
+          const content = convertListItem(li, childOpts);
           if (content) {
-            result += `${i}. ${content}\n`;
+            result += `${indent}${i}. ${content}\n`;
             i++;
           }
         }
       }
-      return result + '\n';
+      return depth === 0 ? result + '\n' : result;
     }
 
     case 'li': return children();
@@ -210,6 +239,25 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
     default:
       return children();
   }
+}
+
+function convertListItem(li: Element, opts: ConvertOptions): string {
+  // Separate inline content from nested lists
+  let inlineContent = '';
+  let nestedLists = '';
+  for (const child of li.childNodes) {
+    if (child.nodeType === 1) {
+      const tag = (child as Element).tagName.toLowerCase();
+      if (tag === 'ul' || tag === 'ol') {
+        nestedLists += elementToMarkdown(child, opts);
+        continue;
+      }
+    }
+    inlineContent += elementToMarkdown(child, opts);
+  }
+  const trimmed = inlineContent.trim();
+  if (!trimmed && !nestedLists) return '';
+  return trimmed + nestedLists;
 }
 
 function convertTable(table: Element, opts: ConvertOptions): string {

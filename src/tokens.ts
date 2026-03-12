@@ -12,15 +12,15 @@ export interface TokenEstimate {
   /** Percentage of common model context windows used */
   contextUsage: {
     'gpt-4o': number;
-    'claude-3.5': number;
-    'gemini-1.5': number;
+    'claude-4': number;
+    'gemini-2.5': number;
   };
 }
 
 const CONTEXT_WINDOWS: Record<string, number> = {
   'gpt-4o': 128_000,
-  'claude-3.5': 200_000,
-  'gemini-1.5': 1_000_000,
+  'claude-4': 200_000,
+  'gemini-2.5': 1_000_000,
 };
 
 export function estimateTokens(text: string): TokenEstimate {

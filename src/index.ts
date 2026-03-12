@@ -50,7 +50,21 @@ export interface ReaddownResult {
 export function readdown(html: string, options: ReaddownOptions = {}): ReaddownResult {
   const { url, includeHeader = true, raw = false } = options;
 
-  const { document } = parseHTML(html);
+  let document: Document;
+  try {
+    ({ document } = parseHTML(html));
+  } catch {
+    // If HTML is severely malformed, return raw text
+    const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const estimate = estimateTokens(text);
+    return {
+      markdown: text + '\n',
+      metadata: { title: '' },
+      tokens: estimate.tokens,
+      chars: estimate.chars,
+      contextUsage: estimate.contextUsage,
+    };
+  }
 
   // Extract metadata before content extraction modifies the DOM
   const metadata = extractMetadata(document, url);

@@ -76,11 +76,10 @@ export function elementToMarkdown(node: Node, opts: ConvertOptions = {}): string
     case 'section':
     case 'article':
     case 'main': {
-      const content = children().trim();
-      if (!content) return '';
+      const content = children();
+      if (!content.trim()) return '';
       const hasBlocks = el.querySelector('p, h1, h2, h3, h4, h5, h6, ul, ol, table, pre, blockquote');
-      if (hasBlocks) return children();
-      return `\n\n${content}\n\n`;
+      return hasBlocks ? content : `\n\n${content.trim()}\n\n`;
     }
 
     case 'br': return '\n';

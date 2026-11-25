@@ -252,6 +252,15 @@ for (const [name, html, expected] of [
 }
 test('title kept without head', () => assert(readdown('<!doctype html><title>T</title><p>a</p>').metadata.title === 'T', 'title lost'));
 
+// Test 25: Deeply nested divs convert in linear time
+console.log('\n--- Deep nesting ---');
+test('deeply nested divs', () => {
+  const start = Date.now();
+  const { markdown } = readdown('<div>'.repeat(60) + '<p>deep</p>' + '</div>'.repeat(60), { includeHeader: false, raw: true });
+  assert(markdown === 'deep\n', `got ${JSON.stringify(markdown)}`);
+  assert(Date.now() - start < 2000, 'too slow');
+});
+
 // Summary
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
 if (failed > 0) process.exit(1);

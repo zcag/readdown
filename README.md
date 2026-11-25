@@ -131,7 +131,7 @@ import { findMainContent, elementToMarkdown, extractMetadata, estimateTokens } f
 ## GitHub Action
 
 ```yaml
-- uses: zcag/readdown@v0.2.0
+- uses: zcag/readdown@v0.2.7
   with:
     url: 'https://example.com/article'
 ```

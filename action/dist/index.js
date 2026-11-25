@@ -34,7 +34,37 @@ __export(index_exports, {
   readdown: () => readdown
 });
 module.exports = __toCommonJS(index_exports);
+
+// src/parse.ts
 var import_linkedom = __nccwpck_require__(9593);
+var HEAD_TAGS = /* @__PURE__ */ new Set(["TITLE", "META", "LINK", "BASE", "STYLE", "SCRIPT"]);
+var STRUCTURAL_TAGS = /* @__PURE__ */ new Set(["HTML", "HEAD", "BODY"]);
+function parseDocument(source) {
+  const { document } = (0, import_linkedom.parseHTML)(source);
+  if (isComplete(document)) return document;
+  const html = document.createElement("html");
+  const head = html.appendChild(document.createElement("head"));
+  const body = html.appendChild(document.createElement("body"));
+  const place = (parent) => {
+    for (const node of [...parent.childNodes]) {
+      if (STRUCTURAL_TAGS.has(node.nodeName)) place(node);
+      else if (HEAD_TAGS.has(node.nodeName)) head.appendChild(node);
+      else if (isContent(node, body)) body.appendChild(node);
+    }
+  };
+  place(document);
+  for (const emptied of [...document.children]) emptied.remove();
+  document.appendChild(html);
+  return document;
+}
+function isComplete(document) {
+  const [root, ...rest] = document.children;
+  return root?.tagName === "HTML" && rest.length === 0 && /^(HEAD,)?BODY$/.test(Array.from(root.children, (el) => el.tagName).join());
+}
+function isContent(node, body) {
+  if (node.nodeType === 3) return body.hasChildNodes() || /\S/.test(node.textContent || "");
+  return node.nodeType === 1;
+}
 
 // src/extract.ts
 var REMOVE_TAGS = /* @__PURE__ */ new Set([
@@ -56,7 +86,7 @@ var REMOVE_TAGS = /* @__PURE__ */ new Set([
   "label",
   "dialog"
 ]);
-var SKIP_CLASSES = /nav|menu|sidebar|footer|header|breadcrumb|pagination|ads?[-_]?|banner|cookie|popup|modal|overlay|social|share|comment-form|search-form|toc[-_]|table-of-contents/i;
+var SKIP_CLASSES = /\bnav\b|menu|sidebar|\bfooter\b|\bheader\b|breadcrumb|pagination|\bads?\b[-_]?|banner|cookie|popup|modal|overlay|\bsocial\b|share|comment-form|search-form|toc[-_]|table-of-contents/i;
 function findMainContent(document) {
   const article = document.querySelector("article");
   if (article && textLength(article) > 200) return article;
@@ -170,13 +200,12 @@ ${content}
     case "section":
     case "article":
     case "main": {
-      const content = children().trim();
-      if (!content) return "";
+      const content = children();
+      if (!content.trim()) return "";
       const hasBlocks = el.querySelector("p, h1, h2, h3, h4, h5, h6, ul, ol, table, pre, blockquote");
-      if (hasBlocks) return children();
-      return `
+      return hasBlocks ? content : `
 
-${content}
+${content.trim()}
 
 `;
     }
@@ -246,6 +275,7 @@ ${(text || "").trimEnd()}
       const text = inline().trim();
       if (!text) return "";
       if (!href || href.startsWith("#") || href.startsWith("javascript:")) return text;
+      if (!text.replace(/\s/g, "")) return "";
       const fullUrl = resolveUrl(href, opts.baseUrl);
       return `[${text}](${fullUrl})`;
     }
@@ -253,6 +283,10 @@ ${(text || "").trimEnd()}
       const alt = el.getAttribute("alt") || "";
       const src = el.getAttribute("src") || el.getAttribute("data-src") || el.getAttribute("data-lazy-src") || "";
       if (!src) return "";
+      if (/trans|spacer|blank|pixel|1x1|tracking|beacon/i.test(src)) return "";
+      const w = el.getAttribute("width");
+      const h = el.getAttribute("height");
+      if (w === "1" || h === "1") return "";
       const fullSrc = resolveUrl(src, opts.baseUrl);
       return `![${alt}](${fullSrc})`;
     }
@@ -293,13 +327,15 @@ ${(text || "").trimEnd()}
       return children();
     // Blockquote
     case "blockquote": {
-      const content = children().trim();
+      const content = children().trim().replace(/\n{3,}/g, "\n\n");
       if (!content) return "";
       return "\n\n" + content.split("\n").map((line) => `> ${line}`).join("\n") + "\n\n";
     }
-    // Table
-    case "table":
+    // Table — skip layout tables, render data tables
+    case "table": {
+      if (isLayoutTable(el)) return children();
       return convertTable(el, opts);
+    }
     // Figure
     case "figure":
       return children();
@@ -343,14 +379,15 @@ ${content.trim()}
     }
     case "summary":
       return "";
-    // Skip media
+    // Skip media (but picture falls through to process its <img> child)
     case "video":
     case "audio":
     case "source":
-    case "picture":
     case "map":
     case "area":
       return "";
+    case "picture":
+      return children();
     default:
       return children();
   }
@@ -371,6 +408,36 @@ function convertListItem(li, opts) {
   const trimmed = inlineContent.trim();
   if (!trimmed && !nestedLists) return "";
   return trimmed + nestedLists;
+}
+function isLayoutTable(table) {
+  const role = table.getAttribute("role");
+  if (role === "presentation" || role === "layout") return true;
+  const rows = table.querySelectorAll("tr");
+  const ths = table.querySelectorAll("th");
+  if (ths.length === 0) {
+    const cells = table.querySelectorAll("td");
+    for (const cell of cells) {
+      if (cell.querySelector("p, h1, h2, h3, h4, h5, h6, ul, ol, table, blockquote, pre, div")) {
+        return true;
+      }
+    }
+    if (rows.length <= 2) {
+      const textLen = (table.textContent || "").trim().length;
+      if (textLen > 500) return true;
+    }
+  }
+  const imgs = table.querySelectorAll("img");
+  let spacerCount = 0;
+  for (const img of imgs) {
+    const src = img.getAttribute("src") || "";
+    const width = img.getAttribute("width");
+    const height = img.getAttribute("height");
+    if (width === "1" && height === "1" || /trans|spacer|blank|pixel/i.test(src)) {
+      spacerCount++;
+    }
+  }
+  if (spacerCount > 0) return true;
+  return false;
 }
 function convertTable(table, opts) {
   const rows = [];
@@ -475,7 +542,7 @@ function readdown(html, options = {}) {
   const { url, includeHeader = true, raw = false } = options;
   let document;
   try {
-    ({ document } = (0, import_linkedom.parseHTML)(html));
+    document = parseDocument(html);
   } catch {
     const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const estimate2 = estimateTokens(text);
@@ -514,7 +581,7 @@ Source: ${metadata.url}
   };
 }
 function cleanMarkdown(md) {
-  return md.replace(/\n{3,}/g, "\n\n").split("\n").map((l) => l.trimEnd()).join("\n").trim() + "\n";
+  return md.split("\n").map((l) => l.trimEnd()).join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (0);
@@ -8181,6 +8248,14 @@ exports.parse = parse;
 
 module.exports = eval("require")("canvas");
 
+
+/***/ }),
+
+/***/ 6982:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("crypto");
 
 /***/ }),
 
@@ -17626,16 +17701,18 @@ var __webpack_exports__ = {};
 // Minimal GitHub Action wrapper - no @actions/core dependency needed
 const fs = __nccwpck_require__(9896);
 const path = __nccwpck_require__(6928);
+const { randomUUID } = __nccwpck_require__(6982);
 
 // Simple @actions/core replacements using environment
 function getInput(name) {
-  return process.env[`INPUT_${name.replace(/-/g, '_').toUpperCase()}`] || '';
+  return process.env[`INPUT_${name.toUpperCase()}`] || '';
 }
 
 function setOutput(name, value) {
   const filePath = process.env.GITHUB_OUTPUT;
   if (filePath) {
-    fs.appendFileSync(filePath, `${name}=${value}\n`);
+    const delimiter = randomUUID();
+    fs.appendFileSync(filePath, `${name}<<${delimiter}\n${value}\n${delimiter}\n`);
   }
 }
 

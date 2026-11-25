@@ -1,16 +1,18 @@
 // Minimal GitHub Action wrapper - no @actions/core dependency needed
 const fs = require('fs');
 const path = require('path');
+const { randomUUID } = require('crypto');
 
 // Simple @actions/core replacements using environment
 function getInput(name) {
-  return process.env[`INPUT_${name.replace(/-/g, '_').toUpperCase()}`] || '';
+  return process.env[`INPUT_${name.toUpperCase()}`] || '';
 }
 
 function setOutput(name, value) {
   const filePath = process.env.GITHUB_OUTPUT;
   if (filePath) {
-    fs.appendFileSync(filePath, `${name}=${value}\n`);
+    const delimiter = randomUUID();
+    fs.appendFileSync(filePath, `${name}<<${delimiter}\n${value}\n${delimiter}\n`);
   }
 }
 

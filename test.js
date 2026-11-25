@@ -226,6 +226,32 @@ test('nested blockquote inner', () => assert(r23.markdown.includes('> > Inner'),
 const r23deep = readdown('<html><head><title>Test</title></head><body><blockquote><p>L1</p><blockquote><p>L2</p><blockquote><p>L3</p></blockquote></blockquote></blockquote></body></html>', { includeHeader: false });
 test('triple nested blockquote', () => assert(r23deep.markdown.includes('> > > L3'), 'missing triple nested'));
 
+// Test 24: HTML without html/head/body tags
+console.log('\n--- Omitted html/head/body ---');
+for (const [name, html, expected] of [
+  ['single element', '<p>hi</p>', 'hi\n'],
+  ['sibling elements', '<h1>Hi</h1><p>yo</p>', '# Hi\n\nyo\n'],
+  ['leading text', 'hello <b>x</b>', 'hello **x**\n'],
+  ['plain text', 'hello', 'hello\n'],
+  ['empty string', '', '\n'],
+  ['body without html', '<body><p>hi</p></body>', 'hi\n'],
+  ['html without body', '<html><p>hi</p></html>', 'hi\n'],
+  ['head without html', '<head><title>T</title></head><p>hi</p>', 'hi\n'],
+  ['doctype and title only', '<!doctype html><title>T</title><p>a</p><p>b</p>', 'a\n\nb\n'],
+  ['title outside head', '<html><title>T</title><body><p>hi</p></body></html>', 'hi\n'],
+  ['leading comment', '<!-- c --><p>hi</p>', 'hi\n'],
+  ['whitespace around head', '<html> <head> </head> <body>\n<p>hi</p></body><script></script></html>', 'hi\n'],
+  ['content after html', '<html><body><p>a</p></body></html><p>b</p>', 'a\n\nb\n'],
+]) {
+  for (const raw of [false, true]) {
+    test(`${name}${raw ? ' (raw)' : ''}`, () => {
+      const { markdown } = readdown(html, { includeHeader: false, raw });
+      assert(markdown === expected, `got ${JSON.stringify(markdown)}`);
+    });
+  }
+}
+test('title kept without head', () => assert(readdown('<!doctype html><title>T</title><p>a</p>').metadata.title === 'T', 'title lost'));
+
 // Summary
 console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
 if (failed > 0) process.exit(1);

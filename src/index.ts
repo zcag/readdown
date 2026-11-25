@@ -13,7 +13,7 @@
  * ```
  */
 
-import { parseHTML } from 'linkedom';
+import { parseDocument } from './parse.js';
 import { findMainContent } from './extract.js';
 import { elementToMarkdown } from './convert.js';
 import { extractMetadata, type Metadata } from './metadata.js';
@@ -54,7 +54,7 @@ export function readdown(html: string, options: ReaddownOptions = {}): ReaddownR
 
   let document: Document;
   try {
-    ({ document } = parseHTML(html));
+    document = parseDocument(html);
   } catch {
     // If HTML is severely malformed, return raw text
     const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();

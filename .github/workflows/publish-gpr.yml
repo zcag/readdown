@@ -17,15 +17,6 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - name: Publish scoped package to GitHub Packages
-        run: |
-          # Scope the package name for GitHub Packages
-          node -e "
-            const pkg = require('./package.json');
-            pkg.name = '@zcag/readdown';
-            pkg.publishConfig = { registry: 'https://npm.pkg.github.com' };
-            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          "
-          npm publish
+      - run: npm publish --registry https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

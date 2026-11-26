@@ -7,17 +7,15 @@ Replaces the common `@mozilla/readability` + `turndown` two-package setup with a
 ## Install
 
 ```bash
-# JSR (recommended)
-npx jsr add @zcag/readdown
-
-# npm (from GitHub)
-npm install github:zcag/readdown
+npm install @zcag/readdown
 ```
+
+Also on [JSR](https://jsr.io/@zcag/readdown): `deno add jsr:@zcag/readdown`.
 
 ## Usage
 
 ```ts
-import { readdown } from 'readdown';
+import { readdown } from '@zcag/readdown';
 
 const html = await fetch('https://example.com/article').then(r => r.text());
 const result = readdown(html, { url: 'https://example.com/article' });
@@ -31,7 +29,7 @@ console.log(result.metadata);  // { title, author, date, ... }
 
 ```bash
 # Install globally
-npx jsr add -g @zcag/readdown
+npm install -g @zcag/readdown
 
 # Convert a URL
 readdown https://example.com/article
@@ -125,13 +123,13 @@ Returns `ReaddownResult`:
 Individual functions are exported for custom pipelines:
 
 ```ts
-import { findMainContent, elementToMarkdown, extractMetadata, estimateTokens } from 'readdown';
+import { findMainContent, elementToMarkdown, extractMetadata, estimateTokens } from '@zcag/readdown';
 ```
 
 ## GitHub Action
 
 ```yaml
-- uses: zcag/readdown@v0.2.7
+- uses: zcag/readdown@v0.2.8
   with:
     url: 'https://example.com/article'
 ```

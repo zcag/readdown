@@ -1,0 +1,28 @@
+name: Publish to npm
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@^11.15.0
+      - run: npm ci
+      - run: npm test
+      - name: Publish unless this version is already on npm
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "@zcag/readdown@$version" version >/dev/null 2>&1; then
+            echo "@zcag/readdown@$version is already published"
+          else
+            npm publish --provenance
+          fi

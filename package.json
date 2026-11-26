@@ -1,6 +1,6 @@
 {
-  "name": "readdown",
-  "version": "0.2.7",
+  "name": "@zcag/readdown",
+  "version": "0.2.8",
   "description": "HTML to clean Markdown optimized for LLMs. One function: HTML in, token-efficient Markdown out.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -14,6 +14,9 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist",
@@ -42,7 +45,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zcag/readdown"
+    "url": "git+https://github.com/zcag/readdown.git"
   },
   "funding": {
     "type": "github",

@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { readdown } from 'readdown';
+ * import { readdown } from '@zcag/readdown';
  *
  * const result = readdown('<html><body><h1>Hello</h1><p>World</p></body></html>');
  * console.log(result.markdown); // # Hello\n\nWorld
